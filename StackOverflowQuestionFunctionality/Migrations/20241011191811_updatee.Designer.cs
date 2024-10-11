@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StackOverflowQuestionFunctionality.Entities;
 
@@ -11,9 +12,10 @@ using StackOverflowQuestionFunctionality.Entities;
 namespace StackOverflowQuestionFunctionality.Migrations
 {
     [DbContext(typeof(StackOverflowDbContext))]
-    partial class StackOverflowDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241011191811_updatee")]
+    partial class updatee
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -52,7 +54,7 @@ namespace StackOverflowQuestionFunctionality.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Answers", (string)null);
+                    b.ToTable("Answers");
                 });
 
             modelBuilder.Entity("StackOverflowQuestionFunctionality.Entities.Comment", b =>
@@ -87,7 +89,7 @@ namespace StackOverflowQuestionFunctionality.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Comments", (string)null);
+                    b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("StackOverflowQuestionFunctionality.Entities.Question", b =>
@@ -115,7 +117,7 @@ namespace StackOverflowQuestionFunctionality.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("Questions");
                 });
 
             modelBuilder.Entity("StackOverflowQuestionFunctionality.Entities.QuestionTag", b =>
@@ -130,7 +132,7 @@ namespace StackOverflowQuestionFunctionality.Migrations
 
                     b.HasIndex("TagId");
 
-                    b.ToTable("QuestionTags", (string)null);
+                    b.ToTable("QuestionTags");
                 });
 
             modelBuilder.Entity("StackOverflowQuestionFunctionality.Entities.Tag", b =>
@@ -144,7 +146,7 @@ namespace StackOverflowQuestionFunctionality.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("StackOverflowQuestionFunctionality.Entities.User", b =>
@@ -167,7 +169,7 @@ namespace StackOverflowQuestionFunctionality.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("StackOverflowQuestionFunctionality.Entities.Answer", b =>

@@ -18,7 +18,7 @@ builder.Services.Configure<JsonOptions>(options =>
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
 
-builder.Services.AddTransient<IDataSeeder, Seeder>();
+builder.Services.AddTransient<Seeder>();
 
 var app = builder.Build();
 
@@ -37,7 +37,17 @@ if (dbContext.Database.GetPendingMigrations().Any())
     dbContext.Database.Migrate();
     dbContext.SaveChanges();
 }
-var dataSeeder = scope.ServiceProvider.GetRequiredService<IDataSeeder>();
-dataSeeder.Seed(dbContext);
+var dataSeeder = scope.ServiceProvider.GetRequiredService<Seeder>();
+var users = dataSeeder.CreateUsersInDatabase(dbContext);
+var questions = dataSeeder.CreateQuestionsInDatabase(dbContext, users);
+var answers = dataSeeder.CreateAnswersInDatabase(dbContext, questions, users);
+var comments = dataSeeder.CreateCommentsInDatabase(dbContext, answers, questions, users);
+dataSeeder.CreateTagsAndAssignThemToQuestions(dbContext, questions);
+
+app.MapGet("users", (StackOverflowDbContext dbContext) =>
+{
+    var users = dbContext.Users.Where(u => u.Id == Guid.Parse("D80D8586-90EF-1AE4-A3D8-03B08255EB28"));
+    return users;
+});
 
 app.Run();

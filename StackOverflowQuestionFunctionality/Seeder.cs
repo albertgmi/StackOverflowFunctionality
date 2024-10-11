@@ -1,31 +1,25 @@
 ﻿using StackOverflowQuestionFunctionality.Entities;
 using Bogus;
+using System.Xml.Linq;
 
 namespace StackOverflowQuestionFunctionality
 {
-    public class Seeder : IDataSeeder
+    public class Seeder
     {
         private readonly Faker faker = new Faker();
-        public void Seed(StackOverflowDbContext context)
+        public void SeedAll(StackOverflowDbContext context)
         {
-            if (context.Users.Any())
-                return;
-            var users = GetUsers();
-            var questions = GetQuestions(users);
-            var answers = GetAnswers(questions, users);
-            var comments = GetComments(answers,questions,users);
-            var tags = GetTags();
-            AssignTagsToQuestions(questions,tags);
-
-            context.Users.AddRange(users);
-            context.Questions.AddRange(questions);
-            context.Answers.AddRange(answers);
-            context.Comments.AddRange(comments);
-            context.Tags.AddRange(tags);
-
-            context.SaveChanges();
+            bool usersInDataBase = context.Users.Any();
+            if (!usersInDataBase)
+            {
+                var users = CreateUsersInDatabase(context);
+                var questions = CreateQuestionsInDatabase(context, users);
+                var answers = CreateAnswersInDatabase(context, questions, users);
+                var comments = CreateCommentsInDatabase(context, answers, questions, users);
+                CreateTagsAndAssignThemToQuestions(context, questions);
+            }
         }
-        public List<User> GetUsers() 
+        public List<User> CreateUsersInDatabase(StackOverflowDbContext context) 
         { 
             var users = new List<User>();
             for (int i = 0; i < 100; i++)
@@ -41,9 +35,40 @@ namespace StackOverflowQuestionFunctionality
                     Street = faker.Address.StreetAddress()
                 });
             }
+
+            if (!context.Users.Any())
+            {
+                context.Users.AddRange(users);
+                context.SaveChanges();
+            }
             return users;
         }
-        public List<Answer> GetAnswers(List<Question> questions, List<User> users)
+        public List<Question> CreateQuestionsInDatabase(StackOverflowDbContext context, List<User> users)
+        {
+            var questions = new List<Question>();
+            for (int i = 0; i < 100; i++)
+            {
+                var edited = faker.Random.Bool();
+                var randomDate = faker.Date.Between(new DateTime(2020, 1, 1), DateTime.Now);
+                var randomDate2 = faker.Date.Between(new DateTime(2023, 1, 1), DateTime.Now);
+                questions.Add(new Question
+                {
+                    Id = faker.Random.Guid(),
+                    Title = faker.Lorem.Sentence(6, 3),
+                    Content = faker.Lorem.Sentence(5, 4),
+                    CreationDate = randomDate,
+                    UpdatedDate = edited ? randomDate2 : randomDate,
+                    UserId = users[faker.Random.Int(0, users.Count - 1)].Id
+                });
+            }
+            if (!context.Questions.Any())
+            {
+                context.Questions.AddRange(questions);
+                context.SaveChanges();
+            }
+            return questions;
+        }
+        public List<Answer> CreateAnswersInDatabase(StackOverflowDbContext context, List<Question> questions, List<User> users)
         {
             var answers = new List<Answer>();
 
@@ -63,9 +88,14 @@ namespace StackOverflowQuestionFunctionality
                     UserId = users[faker.Random.Int(0,users.Count - 1)].Id
                 }); 
             }
+            if (!context.Answers.Any())
+            {
+                context.Answers.AddRange(answers);
+                context.SaveChanges();
+            }
             return answers;
         }
-        public List<Comment> GetComments(List<Answer> answers, List<Question> questions, List<User> users)
+        public List<Comment> CreateCommentsInDatabase(StackOverflowDbContext context, List<Answer> answers, List<Question> questions, List<User> users)
         {
             var comments = new List<Comment>();
 
@@ -86,29 +116,14 @@ namespace StackOverflowQuestionFunctionality
                     UserId = users[faker.Random.Int(0, users.Count - 1)].Id
                 });
             }
+            if (!context.Comments.Any())
+            {
+                context.Comments.AddRange(comments);
+                context.SaveChanges();
+            }
             return comments;
         }
-        public List<Question> GetQuestions(List<User> users)
-        {
-            var questions = new List<Question>();
-            for (int i = 0; i < 100; i++)
-            {
-                var edited = faker.Random.Bool();
-                var randomDate = faker.Date.Between(new DateTime(2020, 1, 1), DateTime.Now);
-                var randomDate2 = faker.Date.Between(new DateTime(2023, 1, 1), DateTime.Now);
-                questions.Add(new Question
-                {
-                    Id = faker.Random.Guid(),
-                    Title = faker.Lorem.Sentence(6, 3),
-                    Content = faker.Lorem.Sentence(5, 4),
-                    CreationDate = randomDate,
-                    UpdatedDate = edited ? randomDate2 : randomDate,
-                    UserId = users[faker.Random.Int(0, users.Count - 1)].Id
-                });
-            }
-            return questions;
-        }
-        public List<Tag> GetTags()
+        public void CreateTagsAndAssignThemToQuestions(StackOverflowDbContext context, List<Question> questions)
         {
             var tags = new List<Tag>();
             for (int i = 0; i < 50; i++)
@@ -118,10 +133,11 @@ namespace StackOverflowQuestionFunctionality
                     Name = faker.Lorem.Word()
                 });
             }
-            return tags;
-        }
-        public void AssignTagsToQuestions(List<Question> questions, List<Tag> tags)
-        {
+            if (!context.Tags.Any())
+            {
+                context.Tags.AddRange(tags);
+                context.SaveChanges();
+            }
             foreach (var question in questions)
             {
                 var tagsToAssign = new List<Tag>();
@@ -132,6 +148,7 @@ namespace StackOverflowQuestionFunctionality
                 }
                 question.Tags = tagsToAssign;
             }
+            context.SaveChanges();
         }
     }
 }
